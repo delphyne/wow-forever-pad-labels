@@ -1,4 +1,4 @@
--- WoW Controller Labels
+-- PadLabels
 --
 -- Changes which glyph set (Xbox letters, PlayStation shapes, Switch "reverse"
 -- letters, or generic numbers) the game draws on controller prompts.
@@ -35,12 +35,12 @@ local STYLE_LABELS = {
 	Generic = "Generic (numbers)",
 }
 
-local PREFIX = "|cff33ccffControllerLabels|r: "
+local PREFIX = "|cff33ccffPadLabels|r: "
 local function Print(msg)
 	print(PREFIX .. msg)
 end
 
-WowControllerLabelsDB = WowControllerLabelsDB or {}
+PadLabelsDB = PadLabelsDB or {}
 
 local function DeviceKey(vendorID, productID)
 	return tostring(vendorID or 0) .. ":" .. tostring(productID or 0)
@@ -88,8 +88,8 @@ end
 -- Push a labelStyle to the engine for one device. style == nil restores
 -- whatever the controller had before this addon first touched it.
 local function ApplyToDevice(device, style)
-	WowControllerLabelsDB.originals = WowControllerLabelsDB.originals or {}
-	WowControllerLabelsDB.overlays = WowControllerLabelsDB.overlays or {}
+	PadLabelsDB.originals = PadLabelsDB.originals or {}
+	PadLabelsDB.overlays = PadLabelsDB.overlays or {}
 	local key = DeviceKey(device.vendorID, device.productID)
 	local configID = { vendorID = device.vendorID, productID = device.productID }
 
@@ -100,32 +100,32 @@ local function ApplyToDevice(device, style)
 		-- GetConfig. Configs layer by device ID, so submit an overlay that
 		-- carries only labelStyle; the mappings stay with the built-in config.
 		if style == nil then
-			if WowControllerLabelsDB.overlays[key] then
+			if PadLabelsDB.overlays[key] then
 				C_GamePad.DeleteConfig(configID)
-				WowControllerLabelsDB.overlays[key] = nil
+				PadLabelsDB.overlays[key] = nil
 			end
 			return true
 		end
 		C_GamePad.SetConfig({
 			configID = configID,
 			name = device.name,
-			comment = "WowControllerLabels: labelStyle overlay only; mappings come from the game default.",
+			comment = "PadLabels: labelStyle overlay only; mappings come from the game default.",
 			labelStyle = style,
 			rawButtonMappings = {},
 			rawAxisMappings = {},
 			axisConfigs = {},
 			stickConfigs = {},
 		})
-		WowControllerLabelsDB.overlays[key] = true
+		PadLabelsDB.overlays[key] = true
 		return true
 	end
 
-	if WowControllerLabelsDB.originals[key] == nil then
+	if PadLabelsDB.originals[key] == nil then
 		-- Remember what the game chose on its own, so "auto" can put it back.
-		WowControllerLabelsDB.originals[key] = config.labelStyle or "Generic"
+		PadLabelsDB.originals[key] = config.labelStyle or "Generic"
 	end
 
-	local target = style or WowControllerLabelsDB.originals[key]
+	local target = style or PadLabelsDB.originals[key]
 	if config.labelStyle == target then
 		return true
 	end
@@ -133,13 +133,13 @@ local function ApplyToDevice(device, style)
 	local newConfig = CopyTable(config)
 	newConfig.configID = configID
 	newConfig.labelStyle = target
-	newConfig.comment = "WowControllerLabels: only labelStyle differs from the game default."
+	newConfig.comment = "PadLabels: only labelStyle differs from the game default."
 	C_GamePad.SetConfig(newConfig)
 	return true
 end
 
 local function ApplyAll(quiet)
-	local style = WowControllerLabelsDB.style
+	local style = PadLabelsDB.style
 	if style and not VALID_STYLES[style] then
 		style = nil
 	end
@@ -174,7 +174,7 @@ local function CurrentEngineStyle()
 end
 
 local function SetStyle(style, quiet)
-	WowControllerLabelsDB.style = style or nil
+	PadLabelsDB.style = style or nil
 	ApplyAll(quiet)
 	if quiet then
 		return
@@ -187,7 +187,7 @@ local function SetStyle(style, quiet)
 end
 
 local function PrintStatus()
-	local chosen = WowControllerLabelsDB.style
+	local chosen = PadLabelsDB.style
 	local engineStyle, deviceName = CurrentEngineStyle()
 	if chosen and VALID_STYLES[chosen] then
 		Print("preference: " .. STYLE_LABELS[chosen] .. ".")
@@ -243,14 +243,14 @@ local function RegisterSettingsPanel()
 		return
 	end
 	pcall(function()
-		local category = Settings.RegisterVerticalLayoutCategory("Controller Labels")
+		local category = Settings.RegisterVerticalLayoutCategory("PadLabels")
 		local function GetValue()
-			return WowControllerLabelsDB.style or "Auto"
+			return PadLabelsDB.style or "Auto"
 		end
 		local function SetValue(value)
 			SetStyle(value ~= "Auto" and value or nil, true)
 		end
-		local setting = Settings.RegisterProxySetting(category, "WowControllerLabels_Style", Settings.VarType.String, "Button glyph style", "Auto", GetValue, SetValue)
+		local setting = Settings.RegisterProxySetting(category, "PadLabels_Style", Settings.VarType.String, "Button glyph style", "Auto", GetValue, SetValue)
 		local function GetOptions()
 			local container = Settings.CreateControlTextContainer()
 			container:Add("Auto", "Auto (match controller)")
@@ -265,9 +265,8 @@ local function RegisterSettingsPanel()
 	end)
 end
 
-SLASH_WOWCONTROLLERLABELS1 = "/padlabels"
-SLASH_WOWCONTROLLERLABELS2 = "/controllerlabels"
-SlashCmdList.WOWCONTROLLERLABELS = function(msg)
+SLASH_PADLABELS1 = "/padlabels"
+SlashCmdList.PADLABELS = function(msg)
 	local arg = (msg or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
 	if arg == "" or arg == "status" or arg == "help" then
 		PrintStatus()
@@ -291,7 +290,7 @@ frame:RegisterEvent("PLAYER_LOGIN")
 frame:RegisterEvent("GAME_PAD_CONNECTED")
 frame:SetScript("OnEvent", function(self, event)
 	if event == "PLAYER_LOGIN" then
-		WowControllerLabelsDB = WowControllerLabelsDB or {}
+		PadLabelsDB = PadLabelsDB or {}
 		if not C_GamePad then
 			Print("C_GamePad API not available; this client is not supported.")
 			return
@@ -300,7 +299,7 @@ frame:SetScript("OnEvent", function(self, event)
 	end
 	-- Re-apply on login and whenever a controller is plugged in, so the chosen
 	-- style follows the device. Silent unless a style is actually set.
-	if WowControllerLabelsDB.style then
+	if PadLabelsDB.style then
 		ApplyAll(true)
 	end
 end)

@@ -1,4 +1,4 @@
-# WoW Controller Labels
+# PadLabels
 
 A tiny addon for **World of Warcraft: Forever** that changes which button glyphs the game draws on controller prompts: Xbox letters, PlayStation shapes, Switch letters, or generic numbers.
 
@@ -9,7 +9,7 @@ It never changes a bind. If you use a Switch-style controller (Pro Controller, 8
 Copy or symlink this folder into the Forever AddOns directory:
 
 ```
-/Applications/World of Warcraft/_forever_/Interface/AddOns/WowControllerLabels
+/Applications/World of Warcraft/_forever_/Interface/AddOns/PadLabels
 ```
 
 On macOS with the game in the default location, `make install` creates the symlink for you. `make uninstall` removes it.
@@ -27,7 +27,7 @@ In chat:
 /padlabels               show the current setting
 ```
 
-There is also a dropdown under Options > AddOns > Controller Labels. The choice is saved account-wide. After changing it, press any controller button and the prompts redraw.
+There is also a dropdown under Options > AddOns > PadLabels. The choice is saved account-wide. After changing it, press any controller button and the prompts redraw.
 
 ## How it works
 

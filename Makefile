@@ -1,6 +1,6 @@
 # Symlink this repo into the WoW: Forever AddOns folder so edits apply on /reload.
 WOW_ADDONS ?= /Applications/World of Warcraft/_forever_/Interface/AddOns
-NAME        = WowControllerLabels
+NAME        = PadLabels
 
 .PHONY: install uninstall check
 
