@@ -1,0 +1,9 @@
+## Interface: 16001
+## Title: WoW Controller Labels
+## Notes: Show Xbox or PlayStation button glyphs on controller prompts without changing any binds.
+## Author: delphyne
+## Version: 1.0.0
+## SavedVariables: WowControllerLabelsDB
+## IconTexture: Interface\Icons\INV_Misc_Gear_01
+
+WowControllerLabels.lua
